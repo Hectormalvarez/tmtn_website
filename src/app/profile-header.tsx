@@ -5,7 +5,7 @@ import { profileData } from './data'
 async function getProfileData() {
   const delay = (ms: number) =>
     new Promise((resolve) => setTimeout(resolve, ms))
-  await delay(4000)
+  await delay(1000)
   return profileData
 }
 

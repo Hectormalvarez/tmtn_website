@@ -1,4 +1,6 @@
-export const reposData = [
+import { Repo } from "@/types/repo"
+
+export const reposData: Repo[] = [
   {
     id: 562587085,
     node_id: 'R_kgDOIYhlzQ',
