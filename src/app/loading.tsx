@@ -1,3 +1,5 @@
+import { RepoLoading } from "./repo-loading";
+
 export default function HomeLoading() {
   return (
     <>
@@ -14,6 +16,7 @@ export default function HomeLoading() {
           <div className="h-2 bg-slate-200 rounded"></div>
         </div>
       </div>
+      <RepoLoading />
     </>
   )
 }
