@@ -1,8 +1,9 @@
 import React, { Suspense } from 'react'
 
 import { Repo } from '@/app/repo'
-import { reposData } from './data'
-import { RepoLoading } from './repo-loading'
+import { reposData } from '@/app/data'
+import { RepoLoading } from '@/app/repo-loading'
+import { Repo as RepoType } from '@/types/repo'
 
 async function getRepoData() {
   const delay = (ms: number) =>
@@ -21,6 +22,11 @@ export const RepoList = () => {
 
 const RepoSection = async () => {
   const repos = await getRepoData()
+  repos.sort((a: RepoType, b: RepoType) => {
+    const aTimestamp = new Date(a.updated_at).getTime()
+    const bTimestamp = new Date(b.updated_at).getTime()
+    return bTimestamp - aTimestamp
+  })
   return (
     <section className="repo-list container">
       {repos.map((repo) => (
