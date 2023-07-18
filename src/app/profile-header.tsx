@@ -28,7 +28,7 @@ export async function ProfileHeader() {
       </div>
       <div className="py-4 max-w-">
         <h2>{profile.bio}</h2>
-        <a href={profile.html_url} className="text-sm underline text-blue-700">
+        <a href={profile.html_url} target='_blank' className="text-sm underline text-blue-700">
           checkout my github
         </a>
       </div>
