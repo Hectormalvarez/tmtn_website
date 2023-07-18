@@ -1,12 +1,10 @@
 import Image from 'next/image'
 
-import { profileData } from './data'
-
 async function getProfileData() {
-  const delay = (ms: number) =>
-    new Promise((resolve) => setTimeout(resolve, ms))
-  await delay(1000)
-  return profileData
+  const profileUrl = "https://api.github.com/users/Hectormalvarez"
+  const res = await fetch(profileUrl)
+  const data = await res.json()
+  return data
 }
 
 export async function ProfileHeader() {
