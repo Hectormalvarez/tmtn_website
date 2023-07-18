@@ -5,7 +5,10 @@ import { convertDate } from '@/utils/time'
 export const Repo = ({ repo }: { repo: IRepo }) => {
   return (
     <article
-      className="flex flex-col justify-between py-4 px-2 my-4 mx-2 rounded-lg bg-gray-100 border-2 border-gray-400 max-w-full"
+      className="
+      flex flex-col justify-between py-4 px-2 my-4 mx-2 rounded-lg
+     bg-gray-100 border-2 border-gray-400
+      "
     >
       <div className="text-left text-ellipsis pb-4">
         <p className="font-serif text-lg font-bold">{repo.name}</p>
