@@ -1,15 +1,14 @@
 import React, { Suspense } from 'react'
 
 import { Repo } from '@/app/repo'
-import { reposData } from '@/app/data'
 import { RepoLoading } from '@/app/repo-loading'
 import { Repo as RepoType } from '@/types/repo'
 
 async function getRepoData() {
-  const delay = (ms: number) =>
-    new Promise((resolve) => setTimeout(resolve, ms))
-  await delay(4000)
-  return reposData
+  const reposUrl = "https://api.github.com/users/Hectormalvarez/repos"
+  const res = await fetch(reposUrl)
+  const data = await res.json()
+  return data
 }
 
 export const RepoList = () => {
@@ -30,7 +29,7 @@ const RepoSection = async () => {
   
   return (
     <section className="repo-list container">
-      {repos.map((repo) => (
+      {repos.map((repo: RepoType) => (
         <Repo repo={repo} key={repo.name} />
       ))}
     </section>
