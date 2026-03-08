@@ -17,9 +17,9 @@ export default function Home() {
         {/* Visual Card (Contact) */}
         <div className="mb-12">
           <p className="text-xs uppercase tracking-widest text-neutral-500 mb-2">Contact</p>
-          <div className="inline-block border border-black p-4">
+          <a href="mailto:halvarez@taylormadetech.net" className="inline-block border border-transparent hover:border-black transition-all cursor-pointer p-4">
             <code className="text-lg font-mono">halvarez@taylormadetech.net</code>
-          </div>
+          </a>
         </div>
 
         {/* Social Links */}
@@ -46,7 +46,7 @@ export default function Home() {
         <h3 className="text-2xl font-bold mb-6 mt-12">Featured Projects</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Project 1: Retail Bot Engine */}
-          <div className="border border-neutral-200 p-4 hover:border-black transition-colors">
+          <div className="border border-neutral-200 p-4 hover:border-black hover:bg-neutral-50 transition-colors cursor-pointer">
             <h4 className="text-lg font-semibold mb-2">Retail Bot Engine</h4>
             <p className="text-neutral-600">
               A Telegram-based retail automation engine built with Python and Docker.
@@ -54,7 +54,7 @@ export default function Home() {
           </div>
 
           {/* Project 2: Ansible Workstation */}
-          <div className="border border-neutral-200 p-4 hover:border-black transition-colors">
+          <div className="border border-neutral-200 p-4 hover:border-black hover:bg-neutral-50 transition-colors cursor-pointer">
             <h4 className="text-lg font-semibold mb-2">Ansible Workstation</h4>
             <p className="text-neutral-600">
               Infrastructure as Code for automated Ubuntu workstation provisioning.
