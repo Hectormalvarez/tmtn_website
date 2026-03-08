@@ -1,3 +1,5 @@
+'use client';
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-white text-black">
@@ -8,10 +10,12 @@ export default function Home() {
         </h2>
         <section className="flex gap-4">
           <a
-            href="mailto:halvarez@taylormadetech.net"
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              window.open('mailto:halvarez@taylormadetech.net', '_blank');
+            }}
             className="text-blue-600 hover:underline"
-            target="_blank"
-            rel="noopener noreferrer"
           >
             Email
           </a>
