@@ -25,12 +25,12 @@ export default async function Home() {
       <div className="max-w-2xl mx-auto px-4 py-16">
         <h1 className="text-4xl font-bold mb-2">Hector Alvarez</h1>
         <h2 className="text-xl text-neutral-600 mb-8">
-          IT Support & Python Developer
+          IT Support & Software Developer
         </h2>
         
         {/* Bio Section */}
         <p className="text-neutral-800 leading-relaxed mb-8">
-          Focused on IT infrastructure, Python-driven automation, and building scalable technical solutions.
+          Focused on IT infrastructure, Software-driven automation, and building scalable technical solutions.
         </p>
 
         {/* Visual Card (Contact) */}
