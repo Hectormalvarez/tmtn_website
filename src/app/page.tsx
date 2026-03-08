@@ -26,7 +26,7 @@ export default function Home() {
         <div className="flex gap-6 mt-4">
           <a
             href="https://www.linkedin.com/in/hector-alvarez-918621117/"
-            className="text-blue-600 hover:underline"
+            className="text-sm font-mono uppercase tracking-wider text-black border-b border-transparent hover:border-black transition-all"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -34,7 +34,7 @@ export default function Home() {
           </a>
           <a
             href="https://github.com/Hectormalvarez"
-            className="text-blue-600 hover:underline"
+            className="text-sm font-mono uppercase tracking-wider text-black border-b border-transparent hover:border-black transition-all"
             target="_blank"
             rel="noopener noreferrer"
           >
