@@ -1,6 +1,25 @@
-'use client';
+interface Repo {
+  id: number;
+  name: string;
+  description: string;
+  html_url: string;
+}
 
-export default function Home() {
+async function getRepos(): Promise<Repo[]> {
+  try {
+    const res = await fetch('https://api.github.com/users/Hectormalvarez/repos?sort=updated&per_page=4', {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+    return res.json();
+  } catch (e) {
+    return [];
+  }
+}
+
+export default async function Home() {
+  const repos = await getRepos();
+
   return (
     <main className="min-h-screen bg-white text-black">
       <div className="max-w-2xl mx-auto px-4 py-16">
@@ -45,21 +64,16 @@ export default function Home() {
         {/* Featured Projects */}
         <h3 className="text-2xl font-bold mb-6 mt-12">Featured Projects</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Project 1: Retail Bot Engine */}
-          <div className="border border-neutral-200 p-4 hover:border-black hover:bg-neutral-50 transition-colors cursor-pointer">
-            <h4 className="text-lg font-semibold mb-2">Retail Bot Engine</h4>
-            <p className="text-neutral-600">
-              A Telegram-based retail automation engine built with Python and Docker.
-            </p>
-          </div>
-
-          {/* Project 2: Ansible Workstation */}
-          <div className="border border-neutral-200 p-4 hover:border-black hover:bg-neutral-50 transition-colors cursor-pointer">
-            <h4 className="text-lg font-semibold mb-2">Ansible Workstation</h4>
-            <p className="text-neutral-600">
-              Infrastructure as Code for automated Ubuntu workstation provisioning.
-            </p>
-          </div>
+          {repos.map((repo) => (
+            <a
+              key={repo.id}
+              href={repo.html_url}
+              className="block border border-transparent p-4 hover:border-black hover:bg-neutral-50 cursor-pointer transition-all"
+            >
+              <div className="font-semibold mb-2">{repo.name}</div>
+              <p className="text-neutral-600">{repo.description}</p>
+            </a>
+          ))}
         </div>
       </div>
     </main>
