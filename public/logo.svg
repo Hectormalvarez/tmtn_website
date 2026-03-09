@@ -1,0 +1,17 @@
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="120" height="40" rx="8" fill="black"/>
+  
+  <g stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M15 12H25M20 12V28"/> <path d="M35 28V12L42.5 20L50 12V28"/> <path d="M60 12H70M65 12V28"/> <path d="M80 28V12L95 28V12"/> </g>
+
+  <g>
+    <circle cx="15" cy="12" r="3" fill="white"/>
+    <circle cx="15" cy="12" r="1.2" fill="black"/>
+    <circle cx="50" cy="28" r="3" fill="white"/>
+    <circle cx="50" cy="28" r="1.2" fill="black"/>
+    <circle cx="60" cy="12" r="3" fill="white"/>
+    <circle cx="60" cy="12" r="1.2" fill="black"/>
+    <circle cx="95" cy="12" r="3" fill="white"/>
+    <circle cx="95" cy="12" r="1.2" fill="black"/>
+  </g>
+</svg>
