@@ -1,28 +1,26 @@
-# Taylor Made Technology Network
+# Taylor Made Technology Network (TMTN)
 
-## Objective
+A professional portfolio and landing page showcasing
+IT infrastructure and software automation projects,
+featuring dynamic GitHub repository integration.
 
-Develop a web application that allows clients easy interaction to request project proposals
+## Tech Stack
 
-## Target Users
+- **Framework:** Next.js 15.5 (App Router)
+- **Library:** React 19
+- **Styling:** Tailwind CSS 4.0
+- **Language:** TypeScript
 
-Any business client that needs technology work
+## Architecture & Deployment
 
-## Technology Stack
+- **Data Fetching:** - Utilizes Next.js server-side data fetching.
+  - Implements a 3600-second revalidation cache.
+  - Optimizes load times and prevents API rate limiting.
 
-NextJS (latest app router), AWS Amplify Hosting
+- **Build Rules:** - `next.config.js` bypasses ESLint errors during builds.
+  - Prevents minor linting infractions from blocking deployments.
 
-## Area of Difficulty
-
-Creating a user friendly scalable website
-
-## Desired Outcome
-
-A website that increases user engagement
-
-## Todo List
-
-- [ ] Create the basic structure of the web application
-- [ ] Implement the user interface according to the design specifications
-- [ ] Deploy the application using AWS Amplify Hosting
-- [ ] Monitor the application for any issues after deployment
+- **CI/CD Pipeline:** - Automated deployment handled via AWS Amplify.
+  - Build specifications and caching strategies defined 
+    in [`amplify.yml`](./amplify.yml).
+  - Enforces a Node.js 22 runtime environment.
