@@ -191,3 +191,22 @@ cleanup() {
     log_info "Cleanup skipped (--no-cleanup)"
   fi
 }
+
+# --- Main ---
+main() {
+  log_info "Starting deployment..."
+  pull_latest
+
+  if [[ "$DEPLOY_PROD" == true ]]; then
+    deploy_prod
+  fi
+
+  if [[ "$DEPLOY_DEV" == true ]]; then
+    deploy_dev
+  fi
+
+  cleanup
+  log_info "Deployment complete."
+}
+
+main
