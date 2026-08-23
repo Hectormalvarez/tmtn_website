@@ -27,35 +27,37 @@ export function ProjectGrid({ repos }: { repos: Repo[] }) {
 
   return (
     <>
-      <h3 className="text-2xl font-bold mb-6 mt-12">Featured Projects</h3>
+      <div className="sticky top-0 z-10 bg-white pt-12 pb-4 -mx-4 px-4">
+        <h3 className="text-2xl font-bold mb-6">Featured Projects</h3>
 
-      <div className="flex flex-wrap gap-2 mb-8">
-        <button
-          onClick={() => { setActiveLanguage(null); setShowAll(false); }}
-          className={`text-xs font-mono px-3 py-1.5 rounded-md border transition-colors ${
-            activeLanguage === null
-              ? 'border-black bg-black text-white'
-              : 'border-neutral-200 text-neutral-500 hover:border-neutral-400 hover:text-neutral-700'
-          }`}
-        >
-          All ({repos.length})
-        </button>
-        {languages.map((lang) => {
-          const count = repos.filter((r) => r.language === lang).length;
-          return (
-            <button
-              key={lang}
-              onClick={() => { setActiveLanguage(lang); setShowAll(false); }}
-              className={`text-xs font-mono px-3 py-1.5 rounded-md border transition-colors ${
-                activeLanguage === lang
-                  ? 'border-black bg-black text-white'
-                  : 'border-neutral-200 text-neutral-500 hover:border-neutral-400 hover:text-neutral-700'
-              }`}
-            >
-              {lang} ({count})
-            </button>
-          );
-        })}
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => { setActiveLanguage(null); setShowAll(false); }}
+            className={`text-xs font-mono px-3 py-1.5 rounded-md border transition-colors ${
+              activeLanguage === null
+                ? 'border-black bg-black text-white'
+                : 'border-neutral-200 text-neutral-500 hover:border-neutral-400 hover:text-neutral-700'
+            }`}
+          >
+            All ({repos.length})
+          </button>
+          {languages.map((lang) => {
+            const count = repos.filter((r) => r.language === lang).length;
+            return (
+              <button
+                key={lang}
+                onClick={() => { setActiveLanguage(lang); setShowAll(false); }}
+                className={`text-xs font-mono px-3 py-1.5 rounded-md border transition-colors ${
+                  activeLanguage === lang
+                    ? 'border-black bg-black text-white'
+                    : 'border-neutral-200 text-neutral-500 hover:border-neutral-400 hover:text-neutral-700'
+                }`}
+              >
+                {lang} ({count})
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
