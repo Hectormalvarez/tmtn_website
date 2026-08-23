@@ -22,7 +22,7 @@ function LanguageBadge({ language }: { language: string | null }) {
 
 function TopicChip({ topic }: { topic: string }) {
   return (
-    <span className="text-xs font-mono px-2 py-0.5 rounded bg-neutral-100 text-neutral-600">
+    <span className="text-[11px] font-mono px-1.5 py-0.5 rounded border border-neutral-200 text-neutral-500">
       {topic}
     </span>
   );
@@ -32,19 +32,26 @@ export function RepoCard({ repo }: { repo: Repo }) {
   return (
     <a
       href={repo.html_url}
-      className="block border border-transparent p-4 hover:border-black hover:bg-neutral-50 cursor-pointer transition-all"
+      className="group block border border-neutral-200 rounded-lg p-5 hover:border-neutral-400 hover:shadow-sm cursor-pointer transition-all"
       target="_blank"
       rel="noopener noreferrer"
     >
-      <div className="flex items-center gap-2 mb-2">
-        <span className="font-semibold">{repo.name}</span>
-        <LanguageBadge language={repo.language} />
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-sm">{repo.name}</span>
+          <LanguageBadge language={repo.language} />
+        </div>
+        <span className="text-neutral-300 group-hover:text-neutral-500 transition-colors text-sm">
+          ↗
+        </span>
       </div>
       {repo.description && (
-        <p className="text-neutral-600 text-sm mb-2">{repo.description}</p>
+        <p className="text-neutral-500 text-sm leading-relaxed mb-3 line-clamp-2">
+          {repo.description}
+        </p>
       )}
       {repo.topics.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 mt-2">
           {repo.topics.map((topic) => (
             <TopicChip key={topic} topic={topic} />
           ))}

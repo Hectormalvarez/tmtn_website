@@ -29,13 +29,13 @@ export function ProjectGrid({ repos }: { repos: Repo[] }) {
     <>
       <h3 className="text-2xl font-bold mb-6 mt-12">Featured Projects</h3>
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex flex-wrap gap-2 mb-8">
         <button
           onClick={() => { setActiveLanguage(null); setShowAll(false); }}
-          className={`text-xs font-mono px-3 py-1 rounded transition-colors ${
+          className={`text-xs font-mono px-3 py-1.5 rounded-md border transition-colors ${
             activeLanguage === null
-              ? 'bg-black text-white'
-              : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+              ? 'border-black bg-black text-white'
+              : 'border-neutral-200 text-neutral-500 hover:border-neutral-400 hover:text-neutral-700'
           }`}
         >
           All ({repos.length})
@@ -46,10 +46,10 @@ export function ProjectGrid({ repos }: { repos: Repo[] }) {
             <button
               key={lang}
               onClick={() => { setActiveLanguage(lang); setShowAll(false); }}
-              className={`text-xs font-mono px-3 py-1 rounded transition-colors ${
+              className={`text-xs font-mono px-3 py-1.5 rounded-md border transition-colors ${
                 activeLanguage === lang
-                  ? 'bg-black text-white'
-                  : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                  ? 'border-black bg-black text-white'
+                  : 'border-neutral-200 text-neutral-500 hover:border-neutral-400 hover:text-neutral-700'
               }`}
             >
               {lang} ({count})
@@ -58,19 +58,21 @@ export function ProjectGrid({ repos }: { repos: Repo[] }) {
         })}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {visible.map((repo) => (
           <RepoCard key={repo.id} repo={repo} />
         ))}
       </div>
 
       {filtered.length > SHOW_BY_DEFAULT && (
-        <button
-          onClick={() => setShowAll((prev) => !prev)}
-          className="mt-6 text-sm font-mono text-neutral-500 hover:text-black transition-colors"
-        >
-          {showAll ? 'Show less' : `Show all ${filtered.length}`}
-        </button>
+        <div className="flex justify-center mt-8">
+          <button
+            onClick={() => setShowAll((prev) => !prev)}
+            className="text-sm font-mono px-6 py-2 rounded-md border border-neutral-200 text-neutral-600 hover:border-black hover:text-black transition-colors"
+          >
+            {showAll ? 'Show less' : `Show all ${filtered.length}`}
+          </button>
+        </div>
       )}
     </>
   );
