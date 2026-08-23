@@ -1,13 +1,35 @@
 services:
+  # Production Container (Always Running)
   web:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: tmtn-web
+      target: runner
+    container_name: tmtn-prod
     restart: unless-stopped
     ports:
-      - "127.0.0.1:${PORT:-3000}:3000"
+      - "127.0.0.1:${PORT:-9150}:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - HOSTNAME=0.0.0.0
+      - HOSTNAME=${HOSTNAME:-0.0.0.0}
+
+  # Development Container (On-Demand)
+  web-dev:
+    profiles: ["dev"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: tmtn-dev
+    ports:
+      - "${DEV_PORT:-8889}:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - HOSTNAME=${HOSTNAME:-0.0.0.0}
+      - WATCHPACK_POLLING=true
