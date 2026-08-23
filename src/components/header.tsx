@@ -3,8 +3,8 @@ import { SITE_NAME, SITE_TAGLINE, SITE_SUBTITLE } from '@/constants/site';
 
 export function Header() {
   return (
-    <header className="py-12 border-b border-gray-100 mb-12">
-      <div className="flex flex-col md:flex-row md:items-center gap-8">
+    <header className="pt-12 pb-6 mb-6">
+      <div className="flex flex-col gap-6">
         <div className="space-y-1">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900">
             {SITE_NAME}
@@ -16,12 +16,12 @@ export function Header() {
           </p>
         </div>
         <div className="flex-shrink-0">
-          <div className="bg-black p-4 rounded-xl shadow-xl transition-transform hover:-rotate-2 hover:scale-105">
+          <div className="bg-black p-4 rounded-xl shadow-xl transition-transform hover:-rotate-2 hover:scale-105 w-fit">
             <Image
               src="/logo.svg"
               alt="TMTN Logo"
-              width={180}
-              height={60}
+              width={140}
+              height={47}
               priority
               className="h-auto"
             />
