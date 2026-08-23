@@ -13,13 +13,44 @@ featuring dynamic GitHub repository integration.
 
 ## Architecture & Deployment
 
-- **Data Fetching:** - Utilizes Next.js server-side data fetching.
-  - Implements a 3600-second revalidation cache.
+- **Data Fetching:**
+  - Server-side data fetching with 3600s revalidation cache.
   - Optimizes load times and prevents API rate limiting.
 
-- **Build Rules:** - `next.config.js` bypasses ESLint errors during builds.
-  - Prevents minor linting infractions from blocking deployments.
+- **Build Rules:**
+  - `next.config.js` bypasses ESLint errors during builds.
 
-- **Deployment:** - Multi-stage Docker container (`node:22-alpine`).
+- **Deployment:**
+  - Multi-stage Docker container (`node:22-alpine`).
   - Managed via `docker-compose.yml` on dedicated host.
   - Ingress via Cloudflare Zero Trust (`cloudflared` tunnel).
+
+## Quick Reference
+
+### Ports (configurable via `.env`)
+
+| Service         | Host Port | Purpose     |
+| --------------- | --------- | ----------- |
+| `web` (prod)    | `9150`    | Live site   |
+| `web-dev` (dev) | `8889`    | Dev/staging |
+
+### Docker Compose
+
+```bash
+docker compose up -d web                          # Start prod
+docker compose --profile dev up -d web-dev        # Start dev
+docker compose --profile dev stop web-dev         # Stop dev
+docker compose up -d --build web                  # Rebuild prod
+```
+
+### Deploy Script (`deploy.sh`)
+
+```bash
+./deploy.sh           # Deploy both prod + dev
+./deploy.sh -p        # Prod only (blue/green with health check)
+./deploy.sh -d        # Dev only (simple rebuild)
+./deploy.sh --no-cleanup  # Skip image pruning
+./deploy.sh -h        # Show help
+```
+
+The script auto-detects its location, pulls latest code, and for production performs a blue/green swap with health verification before cutting over.
