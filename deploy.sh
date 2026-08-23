@@ -5,11 +5,19 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# --- Load Local Environment ---
+if [[ -f .env ]]; then
+  set -a
+  # shellcheck source=/dev/null
+  source .env
+  set +a
+fi
+
 # --- Colors ---
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 log_info()  { echo -e "${GREEN}[INFO]${NC}  $(date '+%H:%M:%S') $*"; }
 log_warn()  { echo -e "${YELLOW}[WARN]${NC}  $(date '+%H:%M:%S') $*"; }
@@ -73,22 +81,43 @@ while [[ $# -gt 0 ]]; do
 done
 
 # --- Extensibility Hooks ---
-
-# Notification system (stub — add webhook/Slack/email here later)
-# Usage: notify "success" "Production deployed"
 notify() {
   local status="$1"
   local message="$2"
-  # TODO: Integrate notification provider
-  # Example webhook:
-  # curl -sf -X POST "${WEBHOOK_URL:-}" \
-  #   -H "Content-Type: application/json" \
-  #   -d "{\"status\":\"$status\",\"message\":\"$message\"}" || true
   log_info "Notification [$status]: $message"
 }
 
+# Generic Port Resolver (No Hardcoded Defaults)
+resolve_port() {
+  local var_name="$1"
+  local current_val="${!var_name:-}"
+
+  if [[ -n "$current_val" ]]; then
+    echo "$current_val"
+    return 0
+  fi
+
+  # Fail fast if running non-interactively (CI/cron) and variable is unset
+  if [[ ! -t 0 ]]; then
+    log_error "Required variable $var_name is not defined in environment or .env" >&2
+    exit 1
+  fi
+
+  local user_input=""
+  while [[ -z "$user_input" ]]; do
+    read -r -p "$(echo -e "${YELLOW}[PROMPT]${NC} Enter host port for $var_name: ")" user_input
+    if [[ -z "$user_input" ]]; then
+      echo -e "${RED}[ERROR]${NC} Port cannot be empty." >&2
+    elif ! [[ "$user_input" =~ ^[0-9]+$ ]] || [ "$user_input" -le 0 ] || [ "$user_input" -gt 65535 ]; then
+      echo -e "${RED}[ERROR]${NC} Invalid port. Must be an integer between 1 and 65535." >&2
+      user_input=""
+    fi
+  done
+
+  echo "$user_input"
+}
+
 # Health check
-# Usage: health_check 3000 30
 health_check() {
   local port="$1"
   local max_attempts="${2:-30}"
@@ -97,7 +126,7 @@ health_check() {
 
   log_info "Health check on port $port (max ${max_attempts} attempts)..."
   for ((i=1; i<=max_attempts; i++)); do
-    if curl -sf "http://localhost:${port}${endpoint}" > /dev/null 2>&1; then
+    if curl -sf "http://127.0.0.1:${port}${endpoint}" > /dev/null 2>&1; then
       log_info "Health check passed (attempt $i/$max_attempts)"
       return 0
     fi
@@ -123,47 +152,55 @@ pull_latest() {
 deploy_dev() {
   log_info "=== Deploying Development ==="
 
-  docker compose --profile dev build web-dev
-  docker compose --profile dev up -d web-dev
+  local dev_port
+  dev_port="$(resolve_port "DEV_PORT")"
 
-  notify "success" "Dev environment deployed"
-  log_info "Dev running on port ${DEV_PORT:-8889}"
+  DEV_PORT="$dev_port" docker compose --profile dev build web-dev
+  DEV_PORT="$dev_port" docker compose --profile dev up -d web-dev
+
+  notify "success" "Dev environment deployed (port $dev_port)"
+  log_info "Dev running on port $dev_port"
 }
 
 # --- Deploy Production (Blue/Green) ---
 deploy_prod() {
   log_info "=== Deploying Production (Blue/Green) ==="
 
-  local prod_port="${PORT:-9150}"
-  local temp_port=9151
+  local prod_port
+  prod_port="$(resolve_port "PORT")"
+  
+  # Temporary verification container port
+  local temp_port=$((prod_port + 1))
   local temp_name="tmtn-prod-temp"
 
-  # Build new image
+  # Clean up leftover temp container if present
+  docker rm -f "$temp_name" >/dev/null 2>&1 || true
+
   log_info "Building new production image..."
   docker compose build web
 
-  # Start temp container on alternate port
-  log_info "Starting temp container on port $temp_port..."
+  log_info "Starting temporary verification container on port $temp_port..."
   docker run -d \
     --name "$temp_name" \
     --env-file .env \
+    -e HOSTNAME="${HOSTNAME:-0.0.0.0}" \
+    -e PORT=3000 \
     -p "127.0.0.1:${temp_port}:3000" \
     tmtn_website-web:latest
 
-  # Health check
   if health_check "$temp_port" 30; then
-    log_info "New container healthy — swapping..."
+    log_info "New container healthy — swapping to live port $prod_port..."
 
-    # Stop old container
-    docker stop tmtn-prod 2>/dev/null || true
-    docker rm tmtn-prod 2>/dev/null || true
+    # Tear down verification container and existing live container
+    docker rm -f "$temp_name" >/dev/null 2>&1 || true
+    docker rm -f tmtn-prod >/dev/null 2>&1 || true
 
-    # Promote temp container
-    docker rename "$temp_name" tmtn-prod
-    docker stop tmtn-prod
+    # Launch live production container
     docker run -d \
       --name tmtn-prod \
       --env-file .env \
+      -e HOSTNAME="${HOSTNAME:-0.0.0.0}" \
+      -e PORT=3000 \
       -p "127.0.0.1:${prod_port}:3000" \
       --restart unless-stopped \
       tmtn_website-web:latest
@@ -171,11 +208,8 @@ deploy_prod() {
     notify "success" "Production deployed (port $prod_port)"
     log_info "Production live on port $prod_port"
   else
-    # Rollback — remove temp, keep old running
     log_error "Health check failed — rolling back"
-    docker stop "$temp_name" 2>/dev/null || true
-    docker rm "$temp_name" 2>/dev/null || true
-
+    docker rm -f "$temp_name" >/dev/null 2>&1 || true
     notify "failure" "Production deployment failed, rolled back"
     exit 1
   fi
