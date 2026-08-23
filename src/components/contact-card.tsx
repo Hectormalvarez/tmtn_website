@@ -8,9 +8,9 @@ export function ContactCard() {
       </p>
       <a
         href={`mailto:${CONTACT_EMAIL}`}
-        className="inline-block border border-transparent hover:border-black transition-all cursor-pointer p-4"
+        className="inline-block border border-transparent hover:border-black transition-all cursor-pointer px-3 py-2 -ml-3"
       >
-        <code className="text-lg font-mono">{CONTACT_EMAIL}</code>
+        <code className="text-sm font-mono">{CONTACT_EMAIL}</code>
       </a>
     </div>
   );
