@@ -13,6 +13,7 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOSTNAME=${HOSTNAME:-0.0.0.0}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
 
   # Development Container (On-Demand)
   web-dev:
@@ -33,3 +34,4 @@ services:
       - PORT=3000
       - HOSTNAME=${HOSTNAME:-0.0.0.0}
       - WATCHPACK_POLLING=true
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}

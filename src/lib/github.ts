@@ -1,18 +1,44 @@
 export interface Repo {
   id: number;
   name: string;
-  description: string;
+  description: string | null;
   html_url: string;
+  language: string | null;
+  topics: string[];
+  stargazers_count: number;
+  fork: boolean;
+  pushed_at: string;
+  homepage: string | null;
+}
+
+function getGithubHeaders(): Record<string, string> {
+  const token = process.env.GITHUB_TOKEN;
+  return token ? { Authorization: `token ${token}` } : {};
 }
 
 export async function getRepos(): Promise<Repo[]> {
   try {
     const res = await fetch(
-      'https://api.github.com/users/Hectormalvarez/repos?sort=updated&per_page=4',
-      { next: { revalidate: 3600 } }
+      'https://api.github.com/users/Hectormalvarez/repos?sort=updated&per_page=100',
+      {
+        headers: getGithubHeaders(),
+        next: { revalidate: 3600 },
+      }
     );
     if (!res.ok) return [];
-    return res.json();
+    const data = await res.json();
+    return data.map((repo: Record<string, unknown>) => ({
+      id: repo.id as number,
+      name: repo.name as string,
+      description: repo.description as string | null,
+      html_url: repo.html_url as string,
+      language: repo.language as string | null,
+      topics: (repo.topics as string[]) ?? [],
+      stargazers_count: (repo.stargazers_count as number) ?? 0,
+      fork: (repo.fork as boolean) ?? false,
+      pushed_at: repo.pushed_at as string,
+      homepage: repo.homepage as string | null,
+    }));
   } catch {
     return [];
   }
