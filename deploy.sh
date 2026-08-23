@@ -71,3 +71,41 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# --- Extensibility Hooks ---
+
+# Notification system (stub — add webhook/Slack/email here later)
+# Usage: notify "success" "Production deployed"
+notify() {
+  local status="$1"
+  local message="$2"
+  # TODO: Integrate notification provider
+  # Example webhook:
+  # curl -sf -X POST "${WEBHOOK_URL:-}" \
+  #   -H "Content-Type: application/json" \
+  #   -d "{\"status\":\"$status\",\"message\":\"$message\"}" || true
+  log_info "Notification [$status]: $message"
+}
+
+# Health check
+# Usage: health_check 3000 30
+health_check() {
+  local port="$1"
+  local max_attempts="${2:-30}"
+  local interval=2
+  local endpoint="/"
+
+  log_info "Health check on port $port (max ${max_attempts} attempts)..."
+  for ((i=1; i<=max_attempts; i++)); do
+    if curl -sf "http://localhost:${port}${endpoint}" > /dev/null 2>&1; then
+      log_info "Health check passed (attempt $i/$max_attempts)"
+      return 0
+    fi
+    if [[ $i -lt $max_attempts ]]; then
+      sleep "$interval"
+    fi
+  done
+
+  log_error "Health check failed after $max_attempts attempts"
+  return 1
+}
