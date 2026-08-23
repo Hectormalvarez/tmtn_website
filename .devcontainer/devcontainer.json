@@ -1,0 +1,33 @@
+{
+  "name": "TMTN Next.js Dev Container",
+  "dockerComposeFile": ["../docker-compose.yml"],
+  "service": "web-dev",
+  "runServices": ["web-dev"],
+  "workspaceFolder": "/app",
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "christian-kohler.path-intellisense"
+      ],
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "terminal.integrated.defaultProfile.linux": "sh"
+      }
+    }
+  },
+  "forwardPorts": [3001],
+  "portsAttributes": {
+    "3001": {
+      "label": "Next.js Dev Server",
+      "onAutoForward": "notify"
+    }
+  }
+}
