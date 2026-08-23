@@ -109,3 +109,12 @@ health_check() {
   log_error "Health check failed after $max_attempts attempts"
   return 1
 }
+
+# --- Git Pull ---
+pull_latest() {
+  log_info "Pulling latest changes..."
+  git pull origin main --ff-only || {
+    log_error "Fast-forward merge failed. Manual intervention required."
+    exit 1
+  }
+}
