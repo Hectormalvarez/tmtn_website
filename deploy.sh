@@ -129,3 +129,54 @@ deploy_dev() {
   notify "success" "Dev environment deployed"
   log_info "Dev running on port ${DEV_PORT:-8889}"
 }
+
+# --- Deploy Production (Blue/Green) ---
+deploy_prod() {
+  log_info "=== Deploying Production (Blue/Green) ==="
+
+  local prod_port="${PORT:-9150}"
+  local temp_port=9151
+  local temp_name="tmtn-prod-temp"
+
+  # Build new image
+  log_info "Building new production image..."
+  docker compose build web
+
+  # Start temp container on alternate port
+  log_info "Starting temp container on port $temp_port..."
+  docker run -d \
+    --name "$temp_name" \
+    --env-file .env \
+    -p "127.0.0.1:${temp_port}:3000" \
+    tmtn_website-web:latest
+
+  # Health check
+  if health_check "$temp_port" 30; then
+    log_info "New container healthy — swapping..."
+
+    # Stop old container
+    docker stop tmtn-prod 2>/dev/null || true
+    docker rm tmtn-prod 2>/dev/null || true
+
+    # Promote temp container
+    docker rename "$temp_name" tmtn-prod
+    docker stop tmtn-prod
+    docker run -d \
+      --name tmtn-prod \
+      --env-file .env \
+      -p "127.0.0.1:${prod_port}:3000" \
+      --restart unless-stopped \
+      tmtn_website-web:latest
+
+    notify "success" "Production deployed (port $prod_port)"
+    log_info "Production live on port $prod_port"
+  else
+    # Rollback — remove temp, keep old running
+    log_error "Health check failed — rolling back"
+    docker stop "$temp_name" 2>/dev/null || true
+    docker rm "$temp_name" 2>/dev/null || true
+
+    notify "failure" "Production deployment failed, rolled back"
+    exit 1
+  fi
+}
