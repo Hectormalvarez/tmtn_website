@@ -180,3 +180,14 @@ deploy_prod() {
     exit 1
   fi
 }
+
+# --- Cleanup ---
+cleanup() {
+  if [[ "$CLEANUP" == true ]]; then
+    log_info "Pruning old images and stopped containers..."
+    docker image prune -f
+    docker container prune -f
+  else
+    log_info "Cleanup skipped (--no-cleanup)"
+  fi
+}
