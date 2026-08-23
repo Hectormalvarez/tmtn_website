@@ -118,3 +118,14 @@ pull_latest() {
     exit 1
   }
 }
+
+# --- Deploy Development ---
+deploy_dev() {
+  log_info "=== Deploying Development ==="
+
+  docker compose --profile dev build web-dev
+  docker compose --profile dev up -d web-dev
+
+  notify "success" "Dev environment deployed"
+  log_info "Dev running on port ${DEV_PORT:-8889}"
+}
