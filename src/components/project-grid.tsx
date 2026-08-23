@@ -27,7 +27,7 @@ export function ProjectGrid({ repos }: { repos: Repo[] }) {
 
   return (
     <>
-      <div className="sticky top-0 z-10 bg-white pt-12 pb-4 -mx-4 px-4">
+      <div className="sticky top-0 z-10 bg-white pt-4 pb-4">
         <h3 className="text-2xl font-bold mb-6">Featured Projects</h3>
 
         <div className="flex flex-wrap gap-2">
