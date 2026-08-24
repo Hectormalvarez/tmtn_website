@@ -3,24 +3,14 @@ const nextConfig = {
   output: 'standalone',
   reactStrictMode: true,
   poweredByHeader: false,
-  compress: false,
+  compress: false, // Cloudflare Edge handles Brotli compression
 
   async headers() {
     return [
-      // Hashed static Next.js assets: long-term immutable caching
-      {
-        source: '/_next/static/(.*)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      // Security and cache-control headers for all application routes
       {
         source: '/(.*)',
         headers: [
+          // Content Security Policy
           {
             key: 'Content-Security-Policy',
             value: [
@@ -34,15 +24,24 @@ const nextConfig = {
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
-              'upgrade-insecure-requests',
+              "upgrade-insecure-requests",
             ].join('; '),
           },
+          // Transport Security
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=63072000; includeSubDomains; preload',
           },
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          // Clickjacking & Sniffing Protection
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          // Privacy & Isolation Policies
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
@@ -58,10 +57,6 @@ const nextConfig = {
           {
             key: 'Cross-Origin-Resource-Policy',
             value: 'same-origin',
-          },
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, s-maxage=0, must-revalidate',
           },
         ],
       },
