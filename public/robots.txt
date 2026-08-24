@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Disallow internal Next.js assets
+Disallow: /_next/
