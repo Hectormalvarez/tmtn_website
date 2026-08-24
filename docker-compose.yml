@@ -24,7 +24,7 @@ services:
       target: dev
     container_name: tmtn-dev
     ports:
-      - "${DEV_PORT:-8889}:3000"
+      - "127.0.0.1:${DEV_PORT:-8889}:3000"
     volumes:
       - .:/app
       - /app/node_modules

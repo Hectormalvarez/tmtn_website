@@ -182,7 +182,7 @@ deploy_prod() {
   log_info "Starting temporary verification container on port $temp_port..."
   docker run -d \
     --name "$temp_name" \
-    --env-file .env \
+    -e GITHUB_TOKEN="${GITHUB_TOKEN:-}" \
     -e HOSTNAME="${HOSTNAME:-0.0.0.0}" \
     -e PORT=3000 \
     -p "127.0.0.1:${temp_port}:3000" \
@@ -198,7 +198,7 @@ deploy_prod() {
     # Launch live production container
     docker run -d \
       --name tmtn-prod \
-      --env-file .env \
+      -e GITHUB_TOKEN="${GITHUB_TOKEN:-}" \
       -e HOSTNAME="${HOSTNAME:-0.0.0.0}" \
       -e PORT=3000 \
       -p "127.0.0.1:${prod_port}:3000" \
