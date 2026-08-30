@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getRepos, getUserProfile, getUserEvents } from '@/lib/github';
+import { getRepos, getUserProfile, getUserEvents, getRepoCommitActivity } from '@/lib/github';
 import { mockRepos, mockUserProfile } from '../test/fixtures';
 
 // ── Mock fetch ───────────────────────────────────────────────────────────────
@@ -11,6 +11,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  mockFetch.mockClear();
   vi.restoreAllMocks();
 });
 
@@ -137,6 +138,57 @@ describe('getUserEvents', () => {
   it('returns empty array on network error', async () => {
     mockFetch.mockRejectedValueOnce(new Error('network'));
     const result = await getUserEvents();
+    expect(result).toEqual([]);
+  });
+});
+
+// ── getRepoCommitActivity ────────────────────────────────────────────────────
+
+describe('getRepoCommitActivity', () => {
+  const mockWeeks = [
+    { days: [0, 2, 3, 5, 1, 0, 0], total: 11, week: 1720000000 },
+    { days: [0, 0, 1, 0, 2, 0, 0], total: 3, week: 1720604800 },
+  ];
+
+  it('returns commit activity array on 200', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true, status: 200, json: async () => mockWeeks,
+    } as Response);
+
+    const result = await getRepoCommitActivity('repo');
+    expect(result).toHaveLength(2);
+    expect(result[0].total).toBe(11);
+    expect(result[0].days).toEqual([0, 2, 3, 5, 1, 0, 0]);
+  });
+
+  it('retries once on 202 and returns data on second call', async () => {
+    mockFetch
+      .mockResolvedValueOnce({ ok: true, status: 202, json: async () => '' } as Response)
+      .mockResolvedValueOnce({ ok: true, status: 200, json: async () => mockWeeks } as Response);
+
+    const result = await getRepoCommitActivity('repo');
+    expect(result).toHaveLength(2);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('returns empty array when 202 persists after retry', async () => {
+    mockFetch
+      .mockResolvedValueOnce({ ok: true, status: 202, json: async () => '' } as Response)
+      .mockResolvedValueOnce({ ok: true, status: 202, json: async () => '' } as Response);
+
+    const result = await getRepoCommitActivity('repo');
+    expect(result).toEqual([]);
+  });
+
+  it('returns empty array on 404 (repo not found)', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 404 } as Response);
+    const result = await getRepoCommitActivity('missing-repo');
+    expect(result).toEqual([]);
+  });
+
+  it('returns empty array on network error', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('network'));
+    const result = await getRepoCommitActivity('repo');
     expect(result).toEqual([]);
   });
 });

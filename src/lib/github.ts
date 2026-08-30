@@ -1,6 +1,6 @@
 export type { Repo, UserProfile, GitHubEvent, EventType, CommitActivityWeek, AggregateStats } from './github.types';
 
-import type { Repo, UserProfile, GitHubEvent, EventType } from './github.types';
+import type { Repo, UserProfile, GitHubEvent, EventType, CommitActivityWeek } from './github.types';
 
 const SUPPORTED_EVENT_TYPES: EventType[] = [
   'PushEvent',
@@ -92,6 +92,30 @@ export async function getUserEvents(): Promise<GitHubEvent[]> {
     return (data as GitHubEvent[]).filter((event) =>
       SUPPORTED_EVENT_TYPES.includes(event.type)
     );
+  } catch {
+    return [];
+  }
+}
+
+export async function getRepoCommitActivity(
+  repo: string,
+): Promise<CommitActivityWeek[]> {
+  try {
+    const url = `https://api.github.com/repos/Hectormalvarez/${repo}/stats/commit_activity`;
+    const headers = getGithubHeaders();
+
+    const first = await fetch(url, { headers, next: { revalidate: 7200 } });
+
+    // 202 = GitHub is computing stats asynchronously — retry once after a short delay
+    if (first.ok && first.status === 202) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const retry = await fetch(url, { headers, next: { revalidate: 7200 } });
+      if (!retry.ok || retry.status === 202) return [];
+      return (await retry.json()) as CommitActivityWeek[];
+    }
+
+    if (!first.ok) return [];
+    return (await first.json()) as CommitActivityWeek[];
   } catch {
     return [];
   }
