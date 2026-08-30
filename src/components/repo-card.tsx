@@ -1,4 +1,7 @@
 import type { Repo } from '@/lib/github';
+import { formatRelativeTime } from '@/lib/format-time';
+
+const STALE_THRESHOLD_MS = 90 * 24 * 60 * 60 * 1000;
 
 const LANGUAGE_COLORS: Record<string, string> = {
   Python: 'bg-blue-100 text-blue-800',
@@ -44,6 +47,8 @@ function TopicChip({ topic }: { topic: string }) {
 }
 
 export function RepoCard({ repo }: { repo: Repo }) {
+  const isStale = Date.now() - new Date(repo.pushed_at).getTime() > STALE_THRESHOLD_MS;
+
   return (
     <a
       href={repo.html_url}
@@ -66,6 +71,31 @@ export function RepoCard({ repo }: { repo: Repo }) {
           {repo.description}
         </p>
       )}
+      <div className="flex items-center gap-3 mt-2 flex-wrap">
+        {repo.stargazers_count > 0 && (
+          <span className="text-xs font-mono text-neutral-500 flex items-center gap-1">
+            ★ {repo.stargazers_count}
+          </span>
+        )}
+        <span className="text-xs font-mono text-neutral-400">
+          {formatRelativeTime(repo.pushed_at)}
+        </span>
+        {isStale && (
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
+            stale
+          </span>
+        )}
+        {repo.archived && (
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-neutral-100 text-neutral-500 border border-neutral-200">
+            archived
+          </span>
+        )}
+        {repo.homepage && (
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-green-50 text-green-700 border border-green-200">
+            Live
+          </span>
+        )}
+      </div>
       {repo.topics.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-2">
           {repo.topics.map((topic) => (
