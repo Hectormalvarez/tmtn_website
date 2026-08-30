@@ -1,15 +1,6 @@
-export interface Repo {
-  id: number;
-  name: string;
-  description: string | null;
-  html_url: string;
-  language: string | null;
-  topics: string[];
-  stargazers_count: number;
-  fork: boolean;
-  pushed_at: string;
-  homepage: string | null;
-}
+export type { Repo, UserProfile, GitHubEvent, EventType, CommitActivityWeek, AggregateStats } from './github.types';
+
+import type { Repo, UserProfile, GitHubEvent } from './github.types';
 
 function getGithubHeaders(): Record<string, string> {
   const token = process.env.GITHUB_TOKEN;
@@ -37,7 +28,10 @@ export async function getRepos(): Promise<Repo[]> {
       stargazers_count: (repo.stargazers_count as number) ?? 0,
       fork: (repo.fork as boolean) ?? false,
       pushed_at: repo.pushed_at as string,
+      created_at: repo.created_at as string,
       homepage: repo.homepage as string | null,
+      forks_count: (repo.forks_count as number) ?? 0,
+      archived: (repo.archived as boolean) ?? false,
     }));
   } catch {
     return [];
