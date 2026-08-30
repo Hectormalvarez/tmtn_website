@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getRepos, getUserProfile } from '@/lib/github';
+import { getRepos, getUserProfile, getUserEvents } from '@/lib/github';
 import { mockRepos, mockUserProfile } from '../test/fixtures';
 
 // ── Mock fetch ───────────────────────────────────────────────────────────────
@@ -97,5 +97,46 @@ describe('getUserProfile', () => {
     expect(profile!.html_url).toBe('https://github.com/Hectormalvarez');
     expect(profile!.following).toBe(5);
     expect(profile!.public_gists).toBe(0);
+  });
+});
+
+// ── getUserEvents ────────────────────────────────────────────────────────────
+
+describe('getUserEvents', () => {
+  it('returns mapped events on success', async () => {
+    const events = [
+      { id: '1', type: 'PushEvent', actor: { id: 1, login: 'test', display_login: 'test', gravatar_id: '', url: '', avatar_url: '' }, repo: { id: 1, name: 'r', url: '' }, payload: { repository_id: 1, push_id: 1, size: 1, distinct_size: 1, ref: 'main', head: 'abc', before: 'def', commits: [] }, public: true, created_at: '2026-01-01T00:00:00Z' },
+      { id: '2', type: 'CreateEvent', actor: { id: 1, login: 'test', display_login: 'test', gravatar_id: '', url: '', avatar_url: '' }, repo: { id: 1, name: 'r', url: '' }, payload: { ref: 'main', ref_type: 'branch', master_branch: 'main', description: null, pusher_type: 'user' }, public: true, created_at: '2026-01-02T00:00:00Z' },
+    ];
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => events } as Response);
+
+    const result = await getUserEvents();
+    expect(result).toHaveLength(2);
+    expect(result[0].type).toBe('PushEvent');
+  });
+
+  it('filters out unsupported event types', async () => {
+    const events = [
+      { id: '1', type: 'PushEvent', actor: { id: 1, login: 't', display_login: 't', gravatar_id: '', url: '', avatar_url: '' }, repo: { id: 1, name: 'r', url: '' }, payload: { repository_id: 1, push_id: 1, size: 1, distinct_size: 1, ref: 'main', head: 'a', before: 'b', commits: [] }, public: true, created_at: '2026-01-01T00:00:00Z' },
+      { id: '2', type: 'WatchEvent', actor: { id: 1, login: 't', display_login: 't', gravatar_id: '', url: '', avatar_url: '' }, repo: { id: 1, name: 'r', url: '' }, payload: { action: 'started' }, public: true, created_at: '2026-01-02T00:00:00Z' },
+      { id: '3', type: 'ForkEvent', actor: { id: 1, login: 't', display_login: 't', gravatar_id: '', url: '', avatar_url: '' }, repo: { id: 1, name: 'r', url: '' }, payload: { forkee: { id: 2, full_name: 't/r2', html_url: '', description: null } }, public: true, created_at: '2026-01-03T00:00:00Z' },
+    ];
+    mockFetch.mockResolvedValueOnce({ ok: true, json: async () => events } as Response);
+
+    const result = await getUserEvents();
+    expect(result).toHaveLength(1);
+    expect(result[0].type).toBe('PushEvent');
+  });
+
+  it('returns empty array on non-ok response', async () => {
+    mockFetch.mockResolvedValueOnce({ ok: false, status: 403 } as Response);
+    const result = await getUserEvents();
+    expect(result).toEqual([]);
+  });
+
+  it('returns empty array on network error', async () => {
+    mockFetch.mockRejectedValueOnce(new Error('network'));
+    const result = await getUserEvents();
+    expect(result).toEqual([]);
   });
 });

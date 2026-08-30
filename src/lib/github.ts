@@ -1,6 +1,13 @@
 export type { Repo, UserProfile, GitHubEvent, EventType, CommitActivityWeek, AggregateStats } from './github.types';
 
-import type { Repo, UserProfile, GitHubEvent } from './github.types';
+import type { Repo, UserProfile, GitHubEvent, EventType } from './github.types';
+
+const SUPPORTED_EVENT_TYPES: EventType[] = [
+  'PushEvent',
+  'CreateEvent',
+  'PullRequestEvent',
+  'ReleaseEvent',
+];
 
 function getGithubHeaders(): Record<string, string> {
   const token = process.env.GITHUB_TOKEN;
@@ -68,5 +75,24 @@ export async function getUserProfile(): Promise<UserProfile | null> {
     };
   } catch {
     return null;
+  }
+}
+
+export async function getUserEvents(): Promise<GitHubEvent[]> {
+  try {
+    const res = await fetch(
+      'https://api.github.com/users/Hectormalvarez/events?per_page=30',
+      {
+        headers: getGithubHeaders(),
+        next: { revalidate: 300 },
+      }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data as GitHubEvent[]).filter((event) =>
+      SUPPORTED_EVENT_TYPES.includes(event.type)
+    );
+  } catch {
+    return [];
   }
 }
