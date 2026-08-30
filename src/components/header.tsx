@@ -1,7 +1,15 @@
 import Image from 'next/image';
 import { SITE_NAME, SITE_TAGLINE, SITE_SUBTITLE } from '@/constants/site';
+import type { UserProfile } from '@/lib/github.types';
 
-export function Header() {
+interface HeaderProps {
+  profile: UserProfile;
+  totalStars: number;
+}
+
+export function Header({ profile, totalStars }: HeaderProps) {
+  const joinYear = new Date(profile.created_at).getFullYear();
+
   return (
     <header className="pt-8 pb-6 mb-6">
       <div className="flex flex-col gap-5">
@@ -14,6 +22,12 @@ export function Header() {
             Operating under{' '}
             <span className="text-black font-semibold">{SITE_SUBTITLE}</span>
           </p>
+        </div>
+        <div className="flex items-center gap-4 text-xs font-mono text-neutral-500">
+          <span>{profile.public_repos} repos</span>
+          <span>★ {totalStars}</span>
+          <span>{profile.followers} followers</span>
+          <span>since {joinYear}</span>
         </div>
         <div>
           <div className="bg-black p-3 rounded-xl shadow-xl transition-transform hover:-rotate-2 hover:scale-105 w-fit">
