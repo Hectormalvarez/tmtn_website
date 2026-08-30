@@ -37,3 +37,36 @@ export async function getRepos(): Promise<Repo[]> {
     return [];
   }
 }
+
+export async function getUserProfile(): Promise<UserProfile | null> {
+  try {
+    const res = await fetch(
+      'https://api.github.com/users/Hectormalvarez',
+      {
+        headers: getGithubHeaders(),
+        next: { revalidate: 86400 },
+      }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return {
+      login: data.login as string,
+      avatar_url: data.avatar_url as string,
+      html_url: data.html_url as string,
+      name: data.name as string | null,
+      bio: data.bio as string | null,
+      location: data.location as string | null,
+      company: data.company as string | null,
+      blog: data.blog as string | null,
+      hireable: data.hireable as boolean | null,
+      twitter_username: data.twitter_username as string | null,
+      public_repos: (data.public_repos as number) ?? 0,
+      public_gists: (data.public_gists as number) ?? 0,
+      followers: (data.followers as number) ?? 0,
+      following: (data.following as number) ?? 0,
+      created_at: data.created_at as string,
+    };
+  } catch {
+    return null;
+  }
+}
