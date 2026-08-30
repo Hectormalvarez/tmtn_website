@@ -27,7 +27,7 @@ export function ProjectGrid({ repos }: { repos: Repo[] }) {
 
   return (
     <>
-      <div className="sticky top-0 z-10 bg-white pt-4 pb-4">
+      <div className="bg-white pt-4 pb-4">
         <h3 className="text-2xl font-bold mb-6">Featured Projects</h3>
 
         <div className="flex flex-wrap gap-2">
@@ -67,7 +67,7 @@ export function ProjectGrid({ repos }: { repos: Repo[] }) {
       </div>
 
       {filtered.length > SHOW_BY_DEFAULT && (
-        <div className="flex justify-center mt-8">
+        <div className="flex justify-center mt-8 pb-4">
           <button
             onClick={() => setShowAll((prev) => !prev)}
             className="text-sm font-mono px-6 py-2 rounded-md border border-neutral-200 text-neutral-600 hover:border-black hover:text-black transition-colors"

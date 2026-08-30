@@ -2,7 +2,7 @@ import { SOCIAL_LINKS } from '@/constants/site';
 
 export function SocialLinks() {
   return (
-    <div className="flex gap-4 mt-4">
+    <div className="flex gap-4">
       {SOCIAL_LINKS.map((link) => (
         <a
           key={link.label}

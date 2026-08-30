@@ -2,7 +2,7 @@ import { CONTACT_EMAIL } from '@/constants/site';
 
 export function ContactCard() {
   return (
-    <div className="mb-6">
+    <div>
       <p className="text-xs uppercase tracking-widest text-neutral-500 mb-2">
         Contact
       </p>
