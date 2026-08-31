@@ -3,14 +3,22 @@ import Image from 'next/image';
 import { Header } from '@/components/header';
 import { ContactCard } from '@/components/contact-card';
 import { SocialLinks } from '@/components/social-links';
-import { ProjectGrid } from '@/components/project-grid';
+import { ProjectGrid, type RepoWithStale } from '@/components/project-grid';
 import { ContributionHeatmap } from '@/components/contribution-heatmap';
 import { aggregateStats } from '@/lib/aggregate-stats';
 import { SITE_TAGLINE, SITE_SUBTITLE } from '@/constants/site';
 
+const STALE_THRESHOLD_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
+
 export default async function Home() {
   const [repos, profile] = await Promise.all([getRepos(), getUserProfile()]);
   const stats = aggregateStats(repos);
+
+  // Compute isStale at build time to avoid hydration mismatch
+  const reposWithStale: RepoWithStale[] = repos.map((repo) => ({
+    ...repo,
+    isStale: Date.now() - new Date(repo.pushed_at).getTime() > STALE_THRESHOLD_MS,
+  }));
 
   // Fetch commit activity for top 10 most-recently-pushed repos (non-forks)
   const topRepos = repos
@@ -80,7 +88,7 @@ export default async function Home() {
                 />
               </div>
             </div>
-            <ProjectGrid repos={repos} />
+            <ProjectGrid repos={reposWithStale} />
           </section>
         </div>
       </div>

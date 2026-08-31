@@ -6,7 +6,11 @@ import { RepoCard } from '@/components/repo-card';
 
 const SHOW_BY_DEFAULT = 8;
 
-function getLanguages(repos: Repo[]): string[] {
+export interface RepoWithStale extends Repo {
+  isStale: boolean;
+}
+
+function getLanguages(repos: RepoWithStale[]): string[] {
   const langs = new Set<string>();
   for (const repo of repos) {
     if (repo.language) langs.add(repo.language);
@@ -14,7 +18,7 @@ function getLanguages(repos: Repo[]): string[] {
   return Array.from(langs).sort();
 }
 
-export function ProjectGrid({ repos }: { repos: Repo[] }) {
+export function ProjectGrid({ repos }: { repos: RepoWithStale[] }) {
   const languages = getLanguages(repos);
   const [activeLanguage, setActiveLanguage] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
@@ -62,7 +66,7 @@ export function ProjectGrid({ repos }: { repos: Repo[] }) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {visible.map((repo) => (
-          <RepoCard key={repo.id} repo={repo} />
+          <RepoCard key={repo.id} repo={repo} isStale={repo.isStale} />
         ))}
       </div>
 

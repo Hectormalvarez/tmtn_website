@@ -1,8 +1,6 @@
 import type { Repo } from '@/lib/github';
 import { formatRelativeTime } from '@/lib/format-time';
 
-const STALE_THRESHOLD_MS = 90 * 24 * 60 * 60 * 1000;
-
 const LANGUAGE_COLORS: Record<string, string> = {
   Python: 'bg-blue-100 text-blue-800',
   TypeScript: 'bg-blue-50 text-blue-700',
@@ -46,9 +44,7 @@ function TopicChip({ topic }: { topic: string }) {
   );
 }
 
-export function RepoCard({ repo }: { repo: Repo }) {
-  const isStale = Date.now() - new Date(repo.pushed_at).getTime() > STALE_THRESHOLD_MS;
-
+export function RepoCard({ repo, isStale }: { repo: Repo; isStale: boolean }) {
   return (
     <a
       href={repo.html_url}
