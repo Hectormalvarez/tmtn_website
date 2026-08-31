@@ -22,12 +22,12 @@ export function Header({ profile, totalStars }: HeaderProps) {
             { value: profile.followers, label: 'followers' },
             { value: joinYear, label: 'since' },
           ].map((stat) => (
-            <div key={stat.label} className="flex flex-col border border-neutral-200 rounded-md px-3 py-2">
-              <span className="text-lg font-bold text-black leading-none">
+            <div key={stat.label} className="flex flex-col border border-neutral-200 rounded-md px-4 py-2.5">
+              <span className="text-xl font-bold text-black leading-none">
                 {stat.icon && <span className="text-neutral-400 mr-0.5">{stat.icon}</span>}
                 {stat.value}
               </span>
-              <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 mt-1">{stat.label}</span>
+              <span className="text-[11px] font-mono uppercase tracking-widest text-neutral-400 mt-1.5">{stat.label}</span>
             </div>
           ))}
         </div>

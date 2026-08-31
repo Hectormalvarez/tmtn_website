@@ -27,13 +27,13 @@ export function ProjectGrid({ repos }: { repos: Repo[] }) {
 
   return (
     <>
-      <div className="bg-white pt-4 pb-4">
+      <div className="sticky top-0 z-10 bg-white pt-4 pb-4">
         <h3 className="text-2xl font-bold mb-6">Featured Projects</h3>
 
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => { setActiveLanguage(null); setShowAll(false); }}
-            className={`text-xs font-mono px-3 py-1.5 rounded-md border transition-colors ${
+            className={`text-xs font-mono px-3 py-1.5 rounded-md border transition-colors cursor-pointer ${
               activeLanguage === null
                 ? 'border-black bg-black text-white'
                 : 'border-neutral-200 text-neutral-500 hover:border-neutral-400 hover:text-neutral-700'
@@ -47,7 +47,7 @@ export function ProjectGrid({ repos }: { repos: Repo[] }) {
               <button
                 key={lang}
                 onClick={() => { setActiveLanguage(lang); setShowAll(false); }}
-                className={`text-xs font-mono px-3 py-1.5 rounded-md border transition-colors ${
+                className={`text-xs font-mono px-3 py-1.5 rounded-md border transition-colors cursor-pointer ${
                   activeLanguage === lang
                     ? 'border-black bg-black text-white'
                     : 'border-neutral-200 text-neutral-500 hover:border-neutral-400 hover:text-neutral-700'
@@ -70,7 +70,7 @@ export function ProjectGrid({ repos }: { repos: Repo[] }) {
         <div className="flex justify-center mt-8 pb-4">
           <button
             onClick={() => setShowAll((prev) => !prev)}
-            className="text-sm font-mono px-6 py-2 rounded-md border border-neutral-200 text-neutral-600 hover:border-black hover:text-black transition-colors"
+            className="relative z-10 text-sm font-mono px-6 py-2 rounded-md border border-neutral-200 text-neutral-600 hover:border-black hover:text-black hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
           >
             {showAll ? 'Show less' : `Show all ${filtered.length}`}
           </button>

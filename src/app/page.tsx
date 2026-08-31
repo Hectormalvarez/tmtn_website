@@ -56,7 +56,7 @@ export default async function Home() {
             <SocialLinks />
             <ContributionHeatmap data={heatmapData} />
           </aside>
-          <section>
+          <section className="pt-6">
             <div className="flex items-start justify-between gap-8 mb-10">
               <div className="space-y-3">
                 <h2 className="text-2xl font-bold tracking-tight text-gray-900">{SITE_TAGLINE}</h2>
