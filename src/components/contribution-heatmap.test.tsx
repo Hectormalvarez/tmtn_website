@@ -5,7 +5,9 @@ import { mockCommitActivity } from '../test/fixtures';
 
 describe('ContributionHeatmap', () => {
   it('renders week columns with 7 day cells each', () => {
-    const { container } = render(<ContributionHeatmap data={mockCommitActivity} />);
+    const { container } = render(
+      <ContributionHeatmap data={mockCommitActivity} />,
+    );
     const cells = container.querySelectorAll('.rounded-sm');
     expect(cells.length).toBe(mockCommitActivity.length * 7);
   });
@@ -29,10 +31,14 @@ describe('ContributionHeatmap', () => {
   });
 
   it('applies title attribute for native tooltips', () => {
-    const { container } = render(<ContributionHeatmap data={mockCommitActivity} />);
+    const { container } = render(
+      <ContributionHeatmap data={mockCommitActivity} />,
+    );
     const cells = container.querySelectorAll('.rounded-sm');
     cells.forEach((cell) => {
-      expect(cell.getAttribute('title')).toMatch(/\d+ commits? on [A-Z][a-z]+ \d+/);
+      expect(cell.getAttribute('title')).toMatch(
+        /\d+ commits? on [A-Z][a-z]+ \d+/,
+      );
     });
   });
 });

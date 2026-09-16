@@ -7,7 +7,15 @@ const DAY = 86400;
 function makeWeeks(pattern: Array<{ total: number }>): CommitActivityWeek[] {
   const base = Math.floor(Date.now() / 1000) - 52 * 7 * DAY;
   return pattern.map((p, i) => ({
-    days: [0, 0, 0, 0, 0, 0, 0] as [number, number, number, number, number, number, number],
+    days: [0, 0, 0, 0, 0, 0, 0] as [
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+      number,
+    ],
     total: p.total,
     week: base + i * 7 * DAY,
   }));

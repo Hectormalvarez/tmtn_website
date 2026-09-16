@@ -93,6 +93,8 @@ describe('RepoCard', () => {
   it('links to the repo html_url', () => {
     render(<RepoCard repo={freshRepo} isStale={false} />);
     const link = screen.getByRole('link');
-    expect(link.getAttribute('href')).toBe('https://github.com/Hectormalvarez/tmtn_website');
+    expect(link.getAttribute('href')).toBe(
+      'https://github.com/Hectormalvarez/tmtn_website',
+    );
   });
 });

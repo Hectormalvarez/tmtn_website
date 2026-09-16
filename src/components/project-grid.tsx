@@ -36,7 +36,10 @@ export function ProjectGrid({ repos }: { repos: RepoWithStale[] }) {
 
         <div className="flex flex-wrap gap-2">
           <button
-            onClick={() => { setActiveLanguage(null); setShowAll(false); }}
+            onClick={() => {
+              setActiveLanguage(null);
+              setShowAll(false);
+            }}
             className={`text-xs font-mono px-3 py-1.5 rounded-md border transition-colors cursor-pointer ${
               activeLanguage === null
                 ? 'border-black bg-black text-white'
@@ -50,7 +53,10 @@ export function ProjectGrid({ repos }: { repos: RepoWithStale[] }) {
             return (
               <button
                 key={lang}
-                onClick={() => { setActiveLanguage(lang); setShowAll(false); }}
+                onClick={() => {
+                  setActiveLanguage(lang);
+                  setShowAll(false);
+                }}
                 className={`text-xs font-mono px-3 py-1.5 rounded-md border transition-colors cursor-pointer ${
                   activeLanguage === lang
                     ? 'border-black bg-black text-white'

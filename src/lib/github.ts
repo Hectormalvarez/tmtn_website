@@ -1,6 +1,19 @@
-export type { Repo, UserProfile, GitHubEvent, EventType, CommitActivityWeek, AggregateStats } from './github.types';
+export type {
+  Repo,
+  UserProfile,
+  GitHubEvent,
+  EventType,
+  CommitActivityWeek,
+  AggregateStats,
+} from './github.types';
 
-import type { Repo, UserProfile, GitHubEvent, EventType, CommitActivityWeek } from './github.types';
+import type {
+  Repo,
+  UserProfile,
+  GitHubEvent,
+  EventType,
+  CommitActivityWeek,
+} from './github.types';
 
 const SUPPORTED_EVENT_TYPES: EventType[] = [
   'PushEvent',
@@ -21,7 +34,7 @@ export async function getRepos(): Promise<Repo[]> {
       {
         headers: getGithubHeaders(),
         next: { revalidate: 3600 },
-      }
+      },
     );
     if (!res.ok) return [];
     const data = await res.json();
@@ -47,13 +60,10 @@ export async function getRepos(): Promise<Repo[]> {
 
 export async function getUserProfile(): Promise<UserProfile | null> {
   try {
-    const res = await fetch(
-      'https://api.github.com/users/Hectormalvarez',
-      {
-        headers: getGithubHeaders(),
-        next: { revalidate: 86400 },
-      }
-    );
+    const res = await fetch('https://api.github.com/users/Hectormalvarez', {
+      headers: getGithubHeaders(),
+      next: { revalidate: 86400 },
+    });
     if (!res.ok) return null;
     const data = await res.json();
     return {
@@ -85,12 +95,12 @@ export async function getUserEvents(): Promise<GitHubEvent[]> {
       {
         headers: getGithubHeaders(),
         next: { revalidate: 300 },
-      }
+      },
     );
     if (!res.ok) return [];
     const data = await res.json();
     return (data as GitHubEvent[]).filter((event) =>
-      SUPPORTED_EVENT_TYPES.includes(event.type)
+      SUPPORTED_EVENT_TYPES.includes(event.type),
     );
   } catch {
     return [];

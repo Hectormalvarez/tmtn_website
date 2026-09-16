@@ -24,7 +24,7 @@ const nextConfig = {
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
-              "upgrade-insecure-requests",
+              'upgrade-insecure-requests',
             ].join('; '),
           },
           // Transport Security
@@ -48,7 +48,8 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(), browsing-topics=()',
+            value:
+              'camera=(), microphone=(), geolocation=(), browsing-topics=()',
           },
           {
             key: 'Cross-Origin-Opener-Policy',

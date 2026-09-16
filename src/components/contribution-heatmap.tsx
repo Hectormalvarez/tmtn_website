@@ -14,7 +14,20 @@ function getLevel(count: number) {
   return LEVELS.find((l) => count >= l.min && count <= l.max) ?? LEVELS[0];
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 interface ContributionHeatmapProps {
   data: CommitActivityWeek[];
@@ -24,7 +37,9 @@ export function ContributionHeatmap({ data }: ContributionHeatmapProps) {
   if (data.length === 0) {
     return (
       <div>
-        <p className="text-xs uppercase tracking-widest text-neutral-500 mb-2">GitHub Activity</p>
+        <p className="text-xs uppercase tracking-widest text-neutral-500 mb-2">
+          GitHub Activity
+        </p>
         <p className="text-sm text-neutral-400 font-mono">no activity data</p>
       </div>
     );
@@ -42,12 +57,17 @@ export function ContributionHeatmap({ data }: ContributionHeatmapProps) {
 
   return (
     <div>
-      <p className="text-xs uppercase tracking-widest text-neutral-500 mb-3">GitHub Activity</p>
+      <p className="text-xs uppercase tracking-widest text-neutral-500 mb-3">
+        GitHub Activity
+      </p>
       <div className="overflow-x-auto scrollbar-hide">
         <div className="inline-flex gap-0.5">
           <div className="flex flex-col gap-0.5 mr-1 pt-4">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d, i) => (
-              <span key={d} className="text-[9px] font-mono text-neutral-400 h-[10px] leading-[10px]">
+              <span
+                key={d}
+                className="text-[9px] font-mono text-neutral-400 h-[10px] leading-[10px]"
+              >
                 {i % 2 === 1 ? d : ''}
               </span>
             ))}

@@ -33,7 +33,7 @@ describe('Home page integration', () => {
             </section>
           </div>
         </div>
-      </main>
+      </main>,
     );
 
     expect(screen.getByText('Hectormalvarez')).toBeDefined();

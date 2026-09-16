@@ -1,4 +1,8 @@
-import type { Repo, AggregateStats, LanguageDistribution } from './github.types';
+import type {
+  Repo,
+  AggregateStats,
+  LanguageDistribution,
+} from './github.types';
 
 export function aggregateStats(repos: Repo[]): AggregateStats {
   if (repos.length === 0) {
@@ -21,20 +25,23 @@ export function aggregateStats(repos: Repo[]): AggregateStats {
     }
   }
 
-  const totalReposWithLang = [...langCounts.values()].reduce((a, b) => a + b, 0);
+  const totalReposWithLang = [...langCounts.values()].reduce(
+    (a, b) => a + b,
+    0,
+  );
   const languageDistribution: LanguageDistribution[] = [...langCounts.entries()]
     .map(([language, count]) => ({
       language,
       count,
-      percentage: totalReposWithLang > 0
-        ? Math.round((count / totalReposWithLang) * 100)
-        : 0,
+      percentage:
+        totalReposWithLang > 0
+          ? Math.round((count / totalReposWithLang) * 100)
+          : 0,
     }))
     .sort((a, b) => b.count - a.count);
 
-  const mostUsedLanguage = languageDistribution.length > 0
-    ? languageDistribution[0].language
-    : null;
+  const mostUsedLanguage =
+    languageDistribution.length > 0 ? languageDistribution[0].language : null;
 
   return {
     totalStars,

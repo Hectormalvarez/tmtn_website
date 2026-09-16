@@ -12,7 +12,8 @@ const LANGUAGE_COLORS: Record<string, string> = {
 
 function LanguageBadge({ language }: { language: string | null }) {
   if (!language) return null;
-  const colorClass = LANGUAGE_COLORS[language] ?? 'bg-neutral-100 text-neutral-700';
+  const colorClass =
+    LANGUAGE_COLORS[language] ?? 'bg-neutral-100 text-neutral-700';
 
   return (
     <span className={`text-xs font-mono px-2 py-0.5 rounded ${colorClass}`}>
