@@ -22,6 +22,8 @@
 # deploy artifacts (written on the production host)
 /.deploy-in-progress
 /.last-deploy.json
+/.deploy-git-pull.log
+
 
 
 # debug
