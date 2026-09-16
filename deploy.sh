@@ -256,9 +256,20 @@ deploy_prod() {
   # Clean up leftover temp container if present
   docker rm -f "$temp_name" >/dev/null 2>&1 || true
 
+  # The compose network is where cloudflared lives; the replacement prod
+  # container MUST join it (aliased `web`) or the tunnel's ingress
+  # (http://web:3000) cannot resolve after the swap — a plain `docker run`
+  # defaults to the bridge network and breaks the site.
+  NETWORK="$(docker inspect tmtn-cloudflared \
+    --format '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}' 2>/dev/null \
+    || true)"
+  NETWORK="${NETWORK:-tmtn_website_default}"
+  log_info "Attaching containers to compose network: $NETWORK"
+
   log_info "Starting temporary verification container on port $temp_port..."
   docker run -d \
     --name "$temp_name" \
+    --network "$NETWORK" \
     -e GITHUB_TOKEN="${GITHUB_TOKEN:-}" \
     -e HOSTNAME="${HOSTNAME:-0.0.0.0}" \
     -e PORT=3000 \
@@ -275,6 +286,8 @@ deploy_prod() {
     # Launch live production container
     docker run -d \
       --name tmtn-prod \
+      --network "$NETWORK" \
+      --network-alias web \
       -e GITHUB_TOKEN="${GITHUB_TOKEN:-}" \
       -e HOSTNAME="${HOSTNAME:-0.0.0.0}" \
       -e PORT=3000 \
