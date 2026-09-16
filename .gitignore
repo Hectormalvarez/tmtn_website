@@ -19,6 +19,11 @@
 .DS_Store
 *.pem
 
+# deploy artifacts (written on the production host)
+/.deploy-in-progress
+/.last-deploy.json
+
+
 # debug
 npm-debug.log*
 yarn-debug.log*
