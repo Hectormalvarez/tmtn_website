@@ -1,0 +1,94 @@
+name: Release
+
+permissions:
+  contents: read
+  packages: write
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE: ghcr.io/hectormalvarez/tmtn-website
+
+jobs:
+  build-and-push:
+    name: Build & Push Image
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+      - name: Log in to GHCR
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+        with:
+          context: .
+          file: Dockerfile
+          target: runner
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:sha-${{ github.event.workflow_run.head_sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to Server (SSH over Cloudflare Access)
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    steps:
+      # The deploy runs natively on the host over an SSH session that is only
+      # reachable through Cloudflare Access (service-token auth at the edge)
+      # via the existing outbound-only tunnel — no open ports. The
+      # server-side authorized_keys entry carries a forced command, so the
+      # key can run ONLY scripts/deploy-wrapper.sh. The job's exit code IS
+      # the deploy outcome.
+      - name: Install pinned cloudflared
+        run: |
+          curl -fsSL -o cloudflared \
+            "https://github.com/cloudflare/cloudflared/releases/download/2026.9.1/cloudflared-linux-amd64"
+          chmod +x cloudflared
+
+      - name: Open SSH tunnel through Cloudflare Access
+        run: |
+          ./cloudflared access tcp \
+            --hostname ssh.taylormadetech.net \
+            --url localhost:2222 \
+            --service-token-id "${{ secrets.CF_ACCESS_ID }}" \
+            --service-token-secret "${{ secrets.CF_ACCESS_SECRET }}" &
+          for _ in $(seq 1 15); do
+            if nc -z localhost 2222 2>/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::Access tunnel did not open"
+          exit 1
+
+      - name: Run deploy on host
+        env:
+          CF_SSH_KEY: ${{ secrets.CF_SSH_KEY }}
+          CF_SSH_KNOWN_HOSTS: ${{ secrets.CF_SSH_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$CF_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$CF_SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+          ssh -p 2222 -i ~/.ssh/id_ed25519 -o BatchMode=yes hadev@localhost -- \
+            "deploy sha-${{ github.event.workflow_run.head_sha }}"

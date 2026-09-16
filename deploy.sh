@@ -1,6 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# deploy.sh — Production deployment orchestrator (blue/green with rollback).
+#
+# Two modes:
+#   * Image mode (CD): scripts/deploy-wrapper.sh sets IMAGE_TAG=sha-<40-hex>,
+#     and this script pulls ghcr.io/hectormalvarez/tmtn-website:<tag> and
+#     swaps it in after health verification. No git operations.
+#   * Build mode (manual): builds the image locally from the current checkout
+#     (git pull included) — the legacy path, kept for manual host deploys.
+#
+# Safety features (mirrors mgdrywallusa-website):
+#   * Lockfile (.deploy-in-progress) so watchdog/manual deploys never race.
+#   * .last-deploy.json status file written on every exit.
+#   * Blue/green: the live container is only replaced after a temp container
+#     passes health checks, so a failed deploy leaves prod untouched.
+
 # Resolve project root from script location
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -12,6 +27,11 @@ if [[ -f .env ]]; then
   source .env
   set +a
 fi
+
+# --- Configuration ---
+GHCR_IMAGE="${GHCR_IMAGE:-ghcr.io/hectormalvarez/tmtn-website}"
+LOCKFILE="$SCRIPT_DIR/.deploy-in-progress"
+STATUS_FILE="$SCRIPT_DIR/.last-deploy.json"
 
 # --- Colors ---
 RED='\033[0;31m'
@@ -36,6 +56,10 @@ Options:
   -a, --all        Deploy both prod and dev (default)
   --no-cleanup     Skip Docker image/container pruning
   -h, --help       Show this help message
+
+Environment:
+  IMAGE_TAG=<sha-...>   Deploy a pushed GHCR image instead of building locally
+                        (set automatically by scripts/deploy-wrapper.sh for CD)
 EOF
   exit 0
 }
@@ -86,6 +110,29 @@ notify() {
   local message="$2"
   log_info "Notification [$status]: $message"
 }
+
+# --- Lockfile + status (single-writer deploys, observable on the host) ---
+if [[ -f "$LOCKFILE" ]]; then
+  log_error "Another deploy is in progress ($LOCKFILE) — aborting."
+  exit 1
+fi
+touch "$LOCKFILE"
+
+on_exit() {
+  local rc=$?
+  rm -f "$LOCKFILE"
+  local status=error
+  if [[ $rc -eq 0 ]]; then
+    status=ok
+  fi
+  printf '{"status":"%s","exit_code":%s,"image_tag":"%s","finished_at":"%s"}\n' \
+    "$status" "$rc" "${IMAGE_TAG:-local}" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    > "$STATUS_FILE"
+  if [[ $rc -ne 0 ]]; then
+    log_error "deploy.sh FAILED with exit code $rc — last steps above"
+  fi
+}
+trap on_exit EXIT
 
 # Generic Port Resolver (No Hardcoded Defaults)
 resolve_port() {
@@ -139,13 +186,33 @@ health_check() {
   return 1
 }
 
-# --- Git Pull ---
+# --- Git Pull (build mode only) ---
 pull_latest() {
   log_info "Pulling latest changes..."
   git pull origin main --ff-only || {
     log_error "Fast-forward merge failed. Manual intervention required."
     exit 1
   }
+}
+
+# --- Cloudflare edge cache purge (best-effort, never blocks) ---
+purge_cf_cache() {
+  if [[ -n "${CLOUDFLARE_API_TOKEN:-}" && -n "${CLOUDFLARE_ZONE_ID:-}" ]]; then
+    log_info "Purging Cloudflare edge cache..."
+    local purge_status
+    purge_status=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+      "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
+      -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+      -H "Content-Type: application/json" \
+      --data '{"purge_everything":true}' || echo "curl-failed")
+    if [[ "$purge_status" == "200" ]]; then
+      log_info "Cloudflare edge cache purged"
+    else
+      log_warn "Cloudflare purge failed (HTTP $purge_status) — non-blocking"
+    fi
+  else
+    log_info "CLOUDFLARE_API_TOKEN/CLOUDFLARE_ZONE_ID not set — skipping cache purge"
+  fi
 }
 
 # --- Deploy Development ---
@@ -173,11 +240,21 @@ deploy_prod() {
   local temp_port=$((prod_port + 1))
   local temp_name="tmtn-prod-temp"
 
+  local image
+  if [[ -n "${IMAGE_TAG:-}" ]]; then
+    # Image mode (CD): pull the pushed image for this commit.
+    image="${GHCR_IMAGE}:${IMAGE_TAG}"
+    log_info "Pulling $image..."
+    docker pull "$image"
+  else
+    # Build mode (manual): build from the local checkout.
+    log_info "Building new production image..."
+    docker compose build web
+    image="tmtn_website-web:latest"
+  fi
+
   # Clean up leftover temp container if present
   docker rm -f "$temp_name" >/dev/null 2>&1 || true
-
-  log_info "Building new production image..."
-  docker compose build web
 
   log_info "Starting temporary verification container on port $temp_port..."
   docker run -d \
@@ -186,7 +263,7 @@ deploy_prod() {
     -e HOSTNAME="${HOSTNAME:-0.0.0.0}" \
     -e PORT=3000 \
     -p "127.0.0.1:${temp_port}:3000" \
-    tmtn_website-web:latest
+    "$image"
 
   if health_check "$temp_port" 30; then
     log_info "New container healthy — swapping to live port $prod_port..."
@@ -203,12 +280,13 @@ deploy_prod() {
       -e PORT=3000 \
       -p "127.0.0.1:${prod_port}:3000" \
       --restart unless-stopped \
-      tmtn_website-web:latest
+      "$image"
 
     notify "success" "Production deployed (port $prod_port)"
     log_info "Production live on port $prod_port"
+    purge_cf_cache
   else
-    log_error "Health check failed — rolling back"
+    log_error "Health check failed — old container left untouched (blue/green rollback)"
     docker rm -f "$temp_name" >/dev/null 2>&1 || true
     notify "failure" "Production deployment failed, rolled back"
     exit 1
@@ -229,7 +307,11 @@ cleanup() {
 # --- Main ---
 main() {
   log_info "Starting deployment..."
-  pull_latest
+
+  # Image mode (CD) skips git operations — the image IS the release.
+  if [[ -z "${IMAGE_TAG:-}" ]]; then
+    pull_latest
+  fi
 
   if [[ "$DEPLOY_PROD" == true ]]; then
     deploy_prod

@@ -14,6 +14,36 @@ services:
       - PORT=3000
       - HOSTNAME=${HOSTNAME:-0.0.0.0}
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+    cap_drop:
+      - ALL
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Containerized Cloudflare Tunnel (prod connector).
+  #
+  # Owns the public hostname for this stack, so it is completely independent
+  # of the host-level tunnel connector. In the Cloudflare dashboard the
+  # tunnel's public hostname (taylormadetech.net) must point at the web
+  # service by name inside this network:  http://web:3000
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel run
+    container_name: tmtn-cloudflared
+    restart: unless-stopped
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?CLOUDFLARE_TUNNEL_TOKEN is required}
+    depends_on:
+      - web
+    cap_drop:
+      - ALL
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # Development Container (On-Demand)
   web-dev:

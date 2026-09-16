@@ -22,8 +22,34 @@ featuring dynamic GitHub repository integration.
 
 - **Deployment:**
   - Multi-stage Docker container (`node:22-alpine`).
-  - Managed via `docker-compose.yml` on dedicated host.
-  - Ingress via Cloudflare Zero Trust (`cloudflared` tunnel).
+  - Managed via `docker-compose.yml` on dedicated host (prod `web` + containerized `cloudflared` tunnel, dev behind the `dev` profile).
+  - Ingress via a dedicated Cloudflare tunnel (`tmtn-prod`) running inside the compose network.
+  - CD: GitHub Actions pushes `ghcr.io/hectormalvarez/tmtn-website:{latest,sha-*}` and deploys over SSH through Cloudflare Access.
+
+## CI/CD
+
+- **CI** (`.github/workflows/ci.yml`): lint + `tsc --noEmit` + Vitest + compose syntax check on every push/PR to `main`.
+- **Release** (`.github/workflows/release.yml`): on green CI on `main`, builds/pushes the image to GHCR (`latest` + `sha-<sha>` tags), then SSHes to the host through Cloudflare Access (`ssh.taylormadetech.net`) and runs `deploy sha-<sha>`.
+- **Server side:**
+  - `scripts/deploy-wrapper.sh` — the only command the deploy SSH key may run (forced command in `authorized_keys`); validates the `deploy sha-<40-hex>` contract.
+  - `deploy.sh` — in image mode, pulls the tagged GHCR image, verifies it in a temp container (blue/green), then swaps prod; writes `.last-deploy.json` and uses a `.deploy-in-progress` lockfile. Build mode (`./deploy.sh`) remains for manual deploys.
+  - `scripts/watchdog.sh` — cron converge loop (every 15 min, skip while a deploy holds the lockfile):
+    `*/15 * * * * /home/hadev/Projects/Code/tmtn_website/scripts/watchdog.sh >> /tmp/tmtn-watchdog.log 2>&1`
+
+### Required GitHub secrets
+
+| Secret | Value |
+| :--- | :--- |
+| `CF_ACCESS_ID` / `CF_ACCESS_SECRET` | Access service token `tmtn-deploy` (stored in `~/.cloudflare/tokens.env` on the workstation) |
+| `CF_SSH_KEY` | Private key `~/.cloudflare/keys/tmtn-deploy_ed25519` |
+| `CF_SSH_KNOWN_HOSTS` | `ssh.taylormadetech.net` host key (from `ssh-keyscan`) |
+
+### Host `authorized_keys` line
+
+```
+command="/home/hadev/Projects/Code/tmtn_website/scripts/deploy-wrapper.sh" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKMZW/4LmuiSufZ9PUxAAmg80dx0FFKGFuItUBGvksq4 gha-tmtn-deploy
+```
+
 
 ## Quick Reference
 
