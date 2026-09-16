@@ -21,5 +21,13 @@ if ! printf '%s' "$TAG" | grep -qE '^sha-[0-9a-f]{40}$'; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-exec env IMAGE_TAG="$TAG" DEPLOY_PROD=true DEPLOY_DEV=false \
-  "$SCRIPT_DIR/deploy.sh"
+
+# Keep the host checkout current BEFORE exec'ing deploy.sh: in image mode the
+# checkout is the source of the deploy tooling itself, and a stale checkout
+# would run stale deploy logic against the fresh image. Safe here because the
+# pull happens before the exec — deploy.sh is loaded fresh by the new process.
+git -C "$SCRIPT_DIR" pull origin main --ff-only >>"$SCRIPT_DIR/.deploy-git-pull.log" 2>&1 \
+  || echo '{"status":"warning","message":"git pull failed — deploying with existing checkout"}'
+
+exec env IMAGE_TAG="$TAG" "$SCRIPT_DIR/deploy.sh" -p
+
